@@ -30,7 +30,7 @@ foreach($folder as $f){
 
 
 $years = array_unique($years);
-print_r($years);
+
 u\DebugUtility::setTimeSpaceLimits(7200);
 
 $site_name = "BL-RTV-WEBS.main";
