@@ -9,22 +9,22 @@ use cascade_ws_utility   as u;
 use cascade_ws_exception as e;
 include_once("ws_auth.php"); 
 
-u\DebugUtility::setTimeSpaceLimits(7200);
+u\DebugUtility::setTimeSpaceLimits(18000);
 
 
 
-//load the author
+
 $authorKeys = array();
 $authorNames = array();
-
-$authors = fopen("afterglowusers.csv", "r");
-
+//load the authors
+$authors = fopen("newsusers.csv", "r");
+//Array of author handles
 while(!feof($authors)){
 $authorKeys[] = fgetcsv($authors)[0];
 }
-
-$authors = fopen("afterglowusers.csv", "r");
-
+//reload the authors to reset the placeholder
+$authors = fopen("newsusers.csv", "r");
+//Array of author names
 while(!feof($authors)){
 $authorNames[] = fgetcsv($authors)[1];
 }
@@ -32,7 +32,7 @@ $authorNames[] = fgetcsv($authors)[1];
 
 
 //load the media XML
-$mediaPath = "afterglowmedia.xml";
+$mediaPath = "newsmedia2015-2.xml";
 $media = new DomDocument;
 $media->load($mediaPath);
 $mediaX = new DomXPath($media);
@@ -45,7 +45,7 @@ $picParentId = $media->getElementsByTagName('post_id');
 
 
 //load the post xml
-$path = "afterglowposts.xml";
+$path = "newsposts2015-2.xml";
 $xml = new DomDocument;
 $xml->load($path);
 $xpath = new DomXPath($xml);
@@ -54,8 +54,8 @@ $xpath = new DomXPath($xml);
 $items = $xml->getElementsByTagName('item');
 
 //Cascade assets need for page assignment
-$folder 				= $admin->getAsset(a\Folder::TYPE, '2162fe00814f4e100dca85cb119eb37d' );
-$contentType			= $admin->getAsset(a\ContentType::TYPE, 'a2a6f12c814f4e105ec7d9f5c9d051c3');
+$folder 				= $admin->getAsset(a\Folder::TYPE, 'b61341fa814f4e10000f9497f6259d4b' );
+$contentType			= $admin->getAsset(a\ContentType::TYPE, 'bc0fa04e814f4e1060f6cc4f9b91b2d1');
 $postFormat 			= $admin->getAsset(a\ScriptFormat::TYPE, 'f0cf41b8814f4e1062a68fcca083e4b7');
 $indexBlock 			= $admin->getAsset(a\IndexBlock::TYPE, 'bc01fa60814f4e1060f6cc4f45deb7a3');
 $metaTags 				= $admin->getAsset(a\ScriptFormat::TYPE, '47e8967b814f4e1065f4ac762084518b');
@@ -73,25 +73,28 @@ foreach ($items as $item) {
 	$date 				= $item->getElementsByTagName('pubDate')[0]->textContent; 
 	$tags				= $item->getElementsByTagName('category')[0]->textContent;
 	$content			= $item->getElementsByTagName('content')[0]->textContent;
-	//$postId 			= $item->getElementsByTagName('post_id')[0]->textContent;
+	$post_id 			= $item->getElementsByTagName('post_id')[0]->textContent;
 	$metaValue 			= $item->getElementsByTagName('meta_value');
 	$metaKey 			= $item->getElementsByTagName('meta_key');
 	$category			= $item->getElementsByTagName('category');
 
 	
 	
+	if(!empty($content)){
 
 
-	$castCat = "";
-	foreach ($category as $cat) {
+
+    //Determine a category for categorizing page
+	// $castCat = "";
+	// foreach ($category as $cat) {
 		
-		if($cat->textContent == "shows"){
-			$castCat = "Shows";
+	// 	if($cat->textContent == "shows"){
+	// 		$castCat = "Shows";
 			
-		} elseif($cat->textContent == "podcasts"){
-			$castCat = "Podcasts";
-		 } 
-	}
+	// 	} elseif($cat->textContent == "podcasts"){
+	// 		$castCat = "Podcasts";
+	// 	 } 
+	// }
 
 
 
@@ -109,33 +112,33 @@ foreach ($items as $item) {
 
 
 	//remove the embedded image tag from post body
-	 preg_match( "/<img.*? \/>/", $content, $imageString);
-	 $content = str_replace($imageString[0], "", $content);
+	//  preg_match( "/<img.*? \/>/", $content, $imageString);
+	//  $content = str_replace($imageString[0], "", $content);
 
 	
- 	//isolate the img tag. 
-	preg_match( "<img.*? \/>", $content, $imageString[0]);
-	$image = $imageString[0];
-	$image = $image[0];
+ // 	//isolate the img tag. 
+	// preg_match( "<img.*? \/>", $content, $imageString[0]);
+	// $image = $imageString[0];
+	// $image = $image[0];
 
 	
 	// // isolate the image URL
-	preg_match("(src=\".*?\")", $image, $imageSrc);
-	$i = str_replace("src=\"", "", $imageSrc[0]);
-	$imageUrl = str_replace("\"", "", $i);
-	$imageUrl = str_replace(".org/", ".org/wpimages/", $imageUrl);
-	$imageUrl = str_replace("files/", "", $imageUrl);
+	// preg_match("(src=\".*?\")", $image, $imageSrc);
+	// $i = str_replace("src=\"", "", $imageSrc[0]);
+	// $imageUrl = str_replace("\"", "", $i);
+	// $imageUrl = str_replace(".org/", ".org/wpimages/", $imageUrl);
+	// $imageUrl = str_replace("files/", "", $imageUrl);
 	
 	
-	//isolate the alt tag
-	preg_match("(alt=\".*?\")", $image, $imageAlt);
-	$i = str_replace("alt=\"", "", $imageAlt[0]);
-	$imageAlt = str_replace("\"", "", $i);
+	// //isolate the alt tag
+	// preg_match("(alt=\".*?\")", $image, $imageAlt);
+	// $i = str_replace("alt=\"", "", $imageAlt[0]);
+	// $imageAlt = str_replace("\"", "", $i);
 
 	
 
-	//isolate the caption
-	preg_match("/>.*?\(/", $image, $imageCap[0]);
+	// //isolate the caption
+	// preg_match("/>.*?\(/", $image, $imageCap[0]);
 	
 
 
@@ -153,11 +156,14 @@ foreach ($items as $item) {
 		 $postId = $meta->nextSibling->nextSibling->nodeValue;
 
 		} 
-
 	}
 
+	//echo $postId;
 	
 
+	// Get the URL and alt info for the wp image
+	// then replace section of old url
+	// to match the new directory holding legacy images
 
 	$imageAlt = "";
 	$imageUrl = "";
@@ -165,22 +171,20 @@ foreach ($items as $item) {
 	  foreach ($picParentId as $parentPic) {
 
 		 if($parentPic->nodeValue == $postId){
-			
-		 	//$title  = $mediaItem->getElementsByTagName('content')[0]->textContent;
+		   
 		   $picItem = $parentPic->parentNode;
 		   $imageUrl    = $picItem->getElementsByTagName('attachment_url')[0]->textContent;
 
-		   $pattern = "/afterglow\/files/";
-		   $replacement ="wpimages/afterglow";
+		   $pattern = "/news\/files/";
+		   $replacement ="wpimages/news";
 		   $imageUrl = preg_replace($pattern, $replacement, $imageUrl);
 
 		   $imageAlt    = $picItem->getElementsByTagName('excerpt')[0]->textContent; 
-
 		  
  		}
 	  }
 
-
+	 
 	
 	/*
 	* Format the post body to eliminate short codes, WP specific markup, and html enitites
@@ -208,6 +212,14 @@ foreach ($items as $item) {
 	$replacement ="";
 	$content = preg_replace($pattern, $replacement, $content);
 
+	$pattern = "(\[pullquote.*?\])";
+	$replacement ="<blockquote>";
+	$content = preg_replace($pattern, $replacement, $content);
+
+	$pattern = "(\[\/pullquote\])";
+	$replacement ="</blockquote>";
+	$content = preg_replace($pattern, $replacement, $content);
+
 
 	/*
 	* removal of the image tag
@@ -217,42 +229,44 @@ foreach ($items as $item) {
 	// $replacement ="";
 	// $content = preg_replace($pattern, $replacement, $content);
 	
-	$content = str_replace("[cf]embed[/cf]", "", $content);
+	$content = str_replace("(\[cf\].*?\[\/cf\])", "", $content);
 	$content = str_replace("&nbsp;", "", $content);	
 
 	
 
 	/*
-	* Find the real media link and replace with new url to converted mp3
+	* Find the mp3 url or the real media link and replace with new url to converted mp3
 	*/
+
+	//amos.indiana.edu/library/eggcolor.rm
 
 	$mp3 = "";
 	foreach($metaValue as $value){
 		if(strpos($value->nodeValue, '.mp3') !== false){
 			$mp3 = preg_split('/(mp3)/', $value->nodeValue)[0] . 'mp3';
-		} elseif(strpos($value->nodeValue, '.ram') !== false){
-			$mp3Slug = preg_match("/afterglow\/.*?.ram/", $value->nodeValue, $mp3);
-			$mp3Slug = preg_replace("/afterglow\//", "", $mp3[0]);
-			$mp3Slug = preg_replace("/.ram/", "", $mp3Slug);
-			$mp3 = "https://indianapublicmedia.org/podcasts/audio/afterglow/old/".$mp3Slug.".mp3";
+		} elseif(strpos($value->nodeValue, '.rm') !== false){
+			$mp3Slug = preg_match("/library\/.*?.rm/", $value->nodeValue, $mp3);
+			$mp3Slug = preg_replace("/amos\.indiana\.edu\/library\//", "", $mp3[0]);
+			$mp3Slug = preg_replace("/library\//", "", $mp3Slug);
+			$mp3Slug = preg_replace("/.rm/", "", $mp3Slug);
+			$mp3 = "https://indianapublicmedia.org/podcasts/audio/amos/old/".$mp3Slug.".mp3";
 		}
 	}
 
-	
 	
 
 	/*
 	* Put tags in an array of objects 
 	*/
 
- 		$tags = array();
- 		foreach($category as $cat){	
- 			if($cat->getAttribute("domain") == "post_tag"){
- 			$obj = new stdClass;
- 			$obj->name = $cat->getAttribute("nicename");
- 			$tags[] = $obj;
- 			}
- 		}
+ 		// $tags = array();
+ 		// foreach($category as $cat){	
+ 		// 	if($cat->getAttribute("domain") == "post_tag"){
+ 		// 	$obj = new stdClass;
+ 		// 	$obj->name = $cat->getAttribute("nicename");
+ 		// 	$tags[] = $obj;
+ 		// 	}
+ 		// }
 
 
 	/*
@@ -292,7 +306,12 @@ foreach ($items as $item) {
 	$content = implode($tmp);
 
 
-	preg_match_all("/(<p>http.*?<\/p>)/", $content, $matches);
+
+		/*
+		*  O-EMBED url handling 
+		*/
+
+		preg_match_all("/(<p>http.*?<\/p>)/", $content, $matches);
 		$matches = $matches[0];
 		
 		
@@ -303,7 +322,7 @@ foreach ($items as $item) {
 		foreach($matches as $match) {
 			
 			
-			if(strpos($match, "httpv") !== false){
+			if(strpos($match, "httpv") !== false || strpos($match, "httpvh") !== false || strpos($match, "http://www.youtube") !== false || strpos($match, "https://www.youtube") !== false){
 				
 
 				$uri = explode("=", $match)[1];
@@ -318,54 +337,7 @@ foreach ($items as $item) {
 				$content = str_replace($match, $iframe, $content);	
 
 			} 
-
-
-			if(strpos($match, "httpvh") !== false){
-				
-				$uri = explode("=", $match)[1];
-				$src = "https://www.youtube.com/embed/".$uri;
-				
-				$src = str_replace("<p>", '', $src);
-				$src = str_replace("</p>", '', $src);
-			
-				$iframe = "<iframe width='560' height='315' src='{$src}' frameborder='0' allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture' allowfullscreen='true'></iframe>";
-
-				$content = str_replace($match, $iframe, $content);
-				
-			} 
-
-			if(strpos($match, "http://www.youtube") !== false){
-				
-
-				$uri = explode("=", $match)[1];
-				$src = "https://www.youtube.com/embed/".$uri;
-				
-
-				$src = str_replace("<p>", '', $src);
-				$src = str_replace("</p>", '', $src);
-			
-				$iframe = "<iframe width='560' height='315' src='{$src}' frameborder='0' allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture' allowfullscreen='true'></iframe>";
-
-				$content = str_replace($match, $iframe, $content);	
-
-			} 
-			
-			if(strpos($match, "https://www.youtube") !== false){
-				
-
-				$uri = explode("=", $match)[1];
-				$src = "https://www.youtube.com/embed/".$uri;
-				
-
-				$src = str_replace("<p>", '', $src);
-				$src = str_replace("</p>", '', $src);
-			
-				$iframe = "<iframe width='560' height='315' src='{$src}' frameborder='0' allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture' allowfullscreen='true'></iframe>";
-
-				$content = str_replace($match, $iframe, $content);	
-
-			} 	
-			
+	
 			
 		}
 
@@ -374,20 +346,22 @@ foreach ($items as $item) {
 		}
 	
 
-	
+	  $dName = $dName."-".$post_id;
 
+	 
+	
 	  try{
-	 			//create page
-			    $page = $cascade->createDataDefinitionPage( $folder, $dName, $contentType);
+ 			//create page
+		    $page = $cascade->createDataDefinitionPage( $folder, $dName, $contentType);
 
 
 			//Populate the page
 
 			//attach correct scripts    
-	 		$page->setRegionFormat( "PHP", "left-8", $postFormat )->
-                       setRegionFormat( "PHP", "meta tags", $metaTags)->
-                       setRegionBlock( "PHP", "meta tags", $indexBlock)->
-                       setRegionBlock( "PHP", "left-8", $indexBlock)->
+	 		$page->setRegionNoFormat( "PHP", "recent category stories", true )->
+                       //setRegionFormat( "PHP", "meta tags", $metaTags)->
+                       setRegionNoBlock( "PHP", "recent category stories", true)->
+                       //setRegionBlock( "PHP", "left-8", $indexBlock)->
                        //set metadata     
                        getMetadata()->
                        setStartDate($date)->
@@ -411,6 +385,13 @@ foreach ($items as $item) {
 		catch(Error $er){
 			  		echo $er;
 			  	}
+			  	echo "</br>";
+			  	echo "</br>";
+			  	echo "</br>";
+
+    } else {
+   
+}
 	 
 } //end items loop
 
