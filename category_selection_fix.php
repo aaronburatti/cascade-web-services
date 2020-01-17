@@ -27,14 +27,17 @@ $wp_xml = array();
 
 foreach ($items as $item) {
 	
-	$category			= $item->getElementsByTagName('category');
+	$category				= $item->getElementsByTagName('category');
 	$post_name 				= $item->getElementsByTagName('post_name')[0]->textContent;
+	$pubDate 				= $item->getElementsByTagName('pubDate')[0]->textContent;
 
 	foreach ($category as $cat) {
 		
 		if( $cat->nodeValue == "podcasts" ) {
 
 			array_push($wp_xml, $post_name);
+
+			//$wp_xml[$post_name] = $pubDate ;
 
 			}			
 
@@ -43,35 +46,42 @@ foreach ($items as $item) {
 
 }
 
+// $page = $admin->getAsset(a\Page::TYPE, 'b5d5372e814f4e101b7f44c124d0ad85' );
+
+// $page->getStructuredData()->setText("cat;contCat;Content", "::CONTENT-XML-CHECKBOX::Podcasts")->getHostAsset()->edit();
 
 
 
 
 foreach($folder as $child){
 
-$page 		= $child->getAsset($service);
+if($child->getType() == "page"){
 
 
-	foreach($wp_xml as $wp){
+	$page 		= $child->getAsset($service);
+
+
+		foreach($wp_xml as $wp){
 	
 
 				if( $wp == $page->getName() ) {
 
-			 	try{
-				print_r($page->getPath());
+				 	try{
+				 		
+						print_r($page->getPath());
 
-				$page->getStructuredData()->setText("cat;contCat:Content", "Podcasts")->getHostAsset()->edit();
-				$page->publish();
-				echo" found one";
+						$page->getStructuredData()->setText("cat;contCat;Content", "::CONTENT-XML-CHECKBOX::Podcasts")->getHostAsset()->edit();
+						//$page->publish();
+						echo" found one";
 
-				}catch(Exception $e){	
-			       $page->display();	  		
-				   	echo $e;
-						  	}
-				catch(Error $er){
-					$page->display();
-				   	echo $er;
-						  	}
+					}catch(Exception $e){	
+				       $page->display();	  		
+					   	echo $e;
+							  	}
+					catch(Error $er){
+						$page->display();
+					   	echo $er;
+							  	}
 
 
 			}
@@ -80,8 +90,6 @@ $page 		= $child->getAsset($service);
 
 	}
 
-
-
-
+}
 
 ?>
